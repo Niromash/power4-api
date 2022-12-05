@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// PublishScore publishes a score to the database and returns the player points
 func PublishScore(c *gin.Context, db *badger.DB) {
 	var scoreRecord api.ScoreRecord
 	if err := c.ShouldBindJSON(&scoreRecord); err != nil {
@@ -36,4 +37,11 @@ func PublishScore(c *gin.Context, db *badger.DB) {
 		c.String(http.StatusInternalServerError, "internal error: "+err.Error())
 		return
 	}
+
+	points, err := getHostPoints(db, scoreRecord.HostId.String())
+	if err != nil {
+		c.String(http.StatusInternalServerError, "internal error: "+err.Error())
+		return
+	}
+	c.String(http.StatusOK, fmt.Sprintf("%d", points))
 }
