@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"scorepower4cours/api"
 	"time"
@@ -12,7 +13,7 @@ import (
 
 // PublishScore publishes a score to the database and returns the player points
 func PublishScore(c *gin.Context, db *badger.DB) {
-	var scoreRecord api.ScoreRecord
+	var scoreRecord api.GameRecord
 	if err := c.ShouldBindJSON(&scoreRecord); err != nil {
 		c.String(http.StatusBadRequest, "invalid body: "+err.Error())
 		return
@@ -23,6 +24,7 @@ func PublishScore(c *gin.Context, db *badger.DB) {
 		return
 	}
 
+	scoreRecord.GameId = uuid.New()
 	scoreRecord.Date = time.Now()
 
 	marshalledBody, err := json.Marshal(scoreRecord)
@@ -38,10 +40,5 @@ func PublishScore(c *gin.Context, db *badger.DB) {
 		return
 	}
 
-	points, err := getHostPoints(db, scoreRecord.HostId.String())
-	if err != nil {
-		c.String(http.StatusInternalServerError, "internal error: "+err.Error())
-		return
-	}
-	c.String(http.StatusOK, fmt.Sprintf("%d", points))
+	c.Status(http.StatusCreated)
 }

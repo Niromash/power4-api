@@ -9,9 +9,13 @@ import (
 )
 
 func GetScores(c *gin.Context, db *badger2.DB) {
-	scores := []api.ScoreRecord{}
-	if err := badger.IterateRecords(db, func(record api.ScoreRecord, i int) {
+	scores := []api.GameRecord{}
+	if err := badger.IterateRecords(db, func(record api.GameRecord, i int) {
 		userIdQuery := c.Query("hostId")
+		gameIdQuery := c.Query("gameId")
+		if len(gameIdQuery) > 0 && record.GameId.String() != gameIdQuery {
+			return
+		}
 		if len(userIdQuery) > 0 && record.HostId.String() != userIdQuery {
 			return
 		}

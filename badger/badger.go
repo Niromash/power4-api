@@ -7,7 +7,7 @@ import (
 	"scorepower4cours/api"
 )
 
-func IterateRecords(db *badger.DB, callback func(record api.ScoreRecord, i int)) error {
+func IterateRecords(db *badger.DB, callback func(record api.GameRecord, i int)) error {
 	return db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
@@ -15,7 +15,7 @@ func IterateRecords(db *badger.DB, callback func(record api.ScoreRecord, i int))
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
 			err := item.Value(func(val []byte) error {
-				var record api.ScoreRecord
+				var record api.GameRecord
 				if err := json.Unmarshal(val, &record); err != nil {
 					return err
 				}
